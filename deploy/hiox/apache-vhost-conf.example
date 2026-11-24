@@ -1,0 +1,33 @@
+# Example only: adapt to the Apache version and TLS paths on your VPS.
+# Requires Apache proxy, proxy_http, and headers modules.
+# Replace HIOX_USERNAME, DOMAIN, and certificate paths before enabling.
+
+<VirtualHost *:80>
+    ServerName DOMAIN
+    ServerAlias www.DOMAIN
+    Redirect permanent / https://DOMAIN/
+</VirtualHost>
+
+<VirtualHost *:443>
+    ServerName DOMAIN
+    ServerAlias www.DOMAIN
+    DocumentRoot /home/HIOX_USERNAME/public_html
+
+    SSLEngine on
+    SSLCertificateFile /path/to/fullchain.pem
+    SSLCertificateKeyFile /path/to/privkey.pem
+
+    <Directory /home/HIOX_USERNAME/public_html>
+        Options -Indexes
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    ProxyRequests Off
+    ProxyPreserveHost On
+    ProxyPass        /api/ http://127.0.0.1:8080/api/ connectiontimeout=5 timeout=120
+    ProxyPassReverse /api/ http://127.0.0.1:8080/api/
+
+    ErrorLog ${APACHE_LOG_DIR}/zavoka-error.log
+    CustomLog ${APACHE_LOG_DIR}/zavoka-access.log combined
+</VirtualHost>
